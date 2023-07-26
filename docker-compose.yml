@@ -1,0 +1,6 @@
+services:
+  mypy:
+    build:
+      context: .
+    volumes:
+      - ./:/app

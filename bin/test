@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+
+function pause() {
+  echo "(press any key to continue)"
+  read -n 1 -s
+}
+
+cat <<-EOS
+mypy should fail on first run because src.lib.protocols.connection.Connection
+contains not_exists property and app.APIConnection does not implement it.
+
+Run: mypy -p main -p src
+EOS
+pause
+docker-compose run --rm mypy mypy -p main -p src
+echo; echo
+
+cat <<-EOS
+We're commenting out the not_exists property in src.lib.protocols.connection.Connection
+
+Run: sed -i '8,9 s/^/#/' src/lib/protocols/connection.py
+EOS
+pause
+docker-compose run --rm mypy sed -i '8,9 s/^/#/' src/lib/protocols/connection.py
+echo; echo
+
+cat <<-EOS
+mypy should pass on second run because src.lib.protocols.connection.Connection
+no longer contains not_exists property and app.APIConnection matches it.
+
+Run: mypy -p main -p src
+EOS
+pause
+docker-compose run --rm mypy mypy -p main -p src
+echo; echo
+
+cat <<-EOS
+We're uncommenting the not_exists property in src.lib.protocols.connection.Connection.
+
+Run: sed -i '8,9 s/^#//' src/lib/protocols/connection.py
+EOS
+pause
+docker-compose run --rm mypy sed -i '8,9 s/^#//' src/lib/protocols/connection.py
+echo; echo
+
+cat <<-EOS
+The expectation is that mypy will fail but it does not.
+My guess is due to a cache issue.
+
+Run: mypy -p main -p src
+EOS
+pause
+docker-compose run --rm mypy mypy -p main -p src
+echo; echo
+
+cat <<-EOS
+We're cleaning the mypy cache.
+
+Run: rm -rf .mypy_cache
+EOS
+pause
+docker-compose run --rm mypy rm -rf .mypy_cache
+echo; echo
+
+cat <<-EOS
+Now mypy fails as expected.
+
+Run: mypy -p main -p src
+EOS
+pause
+docker-compose run --rm mypy mypy -p main -p src
+echo; echo
